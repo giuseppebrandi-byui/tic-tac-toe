@@ -19,9 +19,9 @@ The program must have a function called main.
 #########################
 # FR1. Print instructions
 # FR2. Display the game board
-# FR3. Ask player to enter the position of the marker on the board
-# FR4. Validate the marker position
-# FR5. Place the marker on the board
+# FR3. Ask player to enter the position of the player on the board
+# FR4. Validate the player action
+# FR5. Place the player on the board
 # FR6. Check if there is a winner
 # FR7. Check if there is a tie
 # FR8. Switch player
@@ -34,8 +34,8 @@ The program must have a function called main.
 # DS1. print_instructions()
 # DS2. display_board()
 # DS3. input()
-# DS4. validate_marker_position()
-# DS5. handle_player_turn()
+# DS4. validate_player_action()
+# DS5. handle_player_action()
 # DS6. check_for_winner()
 # DS7. check_if_tie()
 # DS8. flip_player()
@@ -44,6 +44,7 @@ The program must have a function called main.
 
 # Game board
 BOARD = list(map(str, range(1, 10)))
+board = BOARD.copy()
 
 # Set game_still_going to True
 game_still_going = True
@@ -51,8 +52,9 @@ game_still_going = True
 # Set winner to None
 winner = None
 
+PLAYERS = ("X", "O")
 # Current player
-current_player = "X"
+current_player = PLAYERS[0]
 
 
 def main():
@@ -63,17 +65,17 @@ def main():
 
     while game_still_going:
 
-        # DS3. Ask player to enter the position of the marker on the board
+        # DS3. Ask player to enter the position of the player on the board
         # as a number between 1 and 9
         position = input(f"\n{current_player}'s "
                          f"turn to choose a square (1-9): ")
 
-        # DS4. Call validate_marker_position to check that the entered number
+        # DS4. Call validate_player_action to check that the entered number
         # is between 1 and 9 and the position is not already taken
-        validate_marker_position(position)
+        validated_position = validate_player_action(position)
 
-        # DS5. Call the handle_player_turn to place the marker on the board
-        handle_player_turn(current_player, int(position))
+        # DS5. Call the handle_player_action to place the player on the board
+        handle_player_action(current_player, validated_position)
 
         # Call the display_board to display the game board
         display_board()
@@ -86,7 +88,7 @@ def main():
         flip_player()
 
     # The game is over.
-    outcome = f"{winner} won." if winner in ("X", "O") else "Tie."
+    outcome = f"{winner} won." if winner in PLAYERS else "Tie."
     # Print the winner
     print(outcome)
 
@@ -100,7 +102,7 @@ def print_instructions():
         "The objective of Tic Tac Toe is to get three in a row.",
         "You will play on a three by three game board.",
         "The first player is known as X and the second is O.",
-        "Players alternate placing Xs and Os on the game board until either",
+        "Players alternate placing Xs and Os on the game board until either ",
         "opponent has three in a row or all nine squares are filled.",
         "X always goes first, and if no one has three in a row, the stalemate "
         "is called a tie.",
@@ -113,47 +115,45 @@ def display_board():
     It prints the board
     """
     BOARD_SEPARATOR = "--+---+--"
-    print(f"\n{BOARD[0]} | {BOARD[1]} | {BOARD[2]}",
+    print(f"\n{board[0]} | {board[1]} | {board[2]}",
           BOARD_SEPARATOR,
-          f"{BOARD[3]} | {BOARD[4]} | {BOARD[5]}",
+          f"{board[3]} | {board[4]} | {board[5]}",
           BOARD_SEPARATOR,
-          f"{BOARD[6]} | {BOARD[7]} | {BOARD[8]}", sep="\n")
+          f"{board[6]} | {board[7]} | {board[8]}", sep="\n")
 
 
-# resume
-def validate_marker_position(position):
-    valid = False
+def validate_player_action(position):
 
-    while not valid:
+    # Position check that the entered number is between 1 and 9
+    while position not in BOARD:
+        position = input(f"\nInvalid square value. {current_player}"
+                         f"'s turn to choose a square (1-9): ")
 
-        # Check that the entered number is between 1 and 9
-        while position not in BOARD:
-            position = input(f"\nInvalid value. {current_player}"
-                             f"'s turn to choose a square (1-9): ")
+    # Square availability check
+    while board[int(position) - 1] in PLAYERS:
+        position = input(f"\nOccupied square. {current_player}"
+                         f"'s turn to choose a square (1-9): ")
 
-        if BOARD[int(position) - 1] in BOARD:
-            valid = True
-        else:
-            print("\nYou cannot go there. That spot has already been taken.")
+    return int(position)
 
 
-def handle_player_turn(current_player, position):
+def handle_player_action(current_player, position):
     """
-    DS4. This function takes in the current player and the position they want
-    to place their marker in, and then places the marker in that position on
+    This function takes in the current player and the position they want
+    to place their player in, and then places the player in that position on
     the board.
 
-    :param current_player: The current player's marker
+    :param current_player: The current player's player
     :param position: The position that the player wants to place their
-    marker in
+    player in
     """
 
-    BOARD[position - 1] = current_player
+    board[position - 1] = current_player
 
 
 def check_for_winner():
     """
-    DS5. This function checks for a winner by calling the check_rows,
+    This function checks for a winner by calling the check_rows,
     check_columns, and check_diagonals functions
     :return: The winner of the game.
     """
@@ -184,19 +184,19 @@ def check_rows():
     # Set up global variables
     global game_still_going
     # check if any of the rows have all the same value
-    row_1 = BOARD[0] == BOARD[1] == BOARD[2] != 1 != 2 != 3
-    row_2 = BOARD[3] == BOARD[4] == BOARD[5] != 4 != 5 != 6
-    row_3 = BOARD[6] == BOARD[7] == BOARD[8] != 7 != 8 != 9
+    row_1 = board[0] == board[1] == board[2] != 1 != 2 != 3
+    row_2 = board[3] == board[4] == board[5] != 4 != 5 != 6
+    row_3 = board[6] == board[7] == board[8] != 7 != 8 != 9
     # If any row does have a match, flag that there is a win
     if row_1 or row_2 or row_3:
         game_still_going = False
     # Return the winner
     if row_1:
-        return BOARD[0]
+        return board[0]
     elif row_2:
-        return BOARD[2]
+        return board[2]
     elif row_3:
-        return BOARD[6]
+        return board[6]
     return
 
 
@@ -209,19 +209,19 @@ def check_columns():
     # Set up global variables
     global game_still_going
 
-    column_1 = BOARD[0] == BOARD[3] == BOARD[6] != 1 != 4 != 7
-    column_2 = BOARD[1] == BOARD[4] == BOARD[7] != 2 != 5 != 8
-    column_3 = BOARD[2] == BOARD[5] == BOARD[8] != 3 != 6 != 9
+    column_1 = board[0] == board[3] == board[6] != 1 != 4 != 7
+    column_2 = board[1] == board[4] == board[7] != 2 != 5 != 8
+    column_3 = board[2] == board[5] == board[8] != 3 != 6 != 9
 
     if column_1 or column_2 or column_3:
         game_still_going = False
     # Return the winner
     if column_1:
-        return BOARD[0]
+        return board[0]
     elif column_2:
-        return BOARD[1]
+        return board[1]
     elif column_3:
-        return BOARD[2]
+        return board[2]
     return
 
 
@@ -234,16 +234,16 @@ def check_diagonals():
     # Set up global variables
     global game_still_going
     # check if any of the diagonal rows have all the same value
-    diagonal_1 = BOARD[0] == BOARD[4] == BOARD[8] != 1 != 5 != 9
-    diagonal_2 = BOARD[6] == BOARD[4] == BOARD[2] != 7 != 5 != 3
+    diagonal_1 = board[0] == board[4] == board[8] != 1 != 5 != 9
+    diagonal_2 = board[6] == board[4] == board[2] != 7 != 5 != 3
     # If any diagonal does have a match, flag that there is a win
     if diagonal_1 or diagonal_2:
         game_still_going = False
     # Return the winner
     if diagonal_1:
-        return BOARD[0]
+        return board[0]
     elif diagonal_2:
-        return BOARD[6]
+        return board[6]
     return
 
 
@@ -254,9 +254,9 @@ def check_if_tie():
     """
     global game_still_going
     if (
-        "1" not in BOARD and "2" not in BOARD and "3" not in BOARD and
-        "4" not in BOARD and "5" not in BOARD and "6" not in BOARD and
-        "7" not in BOARD and "8" not in BOARD and "9" not in BOARD
+        "1" not in board and "2" not in board and "3" not in board and
+        "4" not in board and "5" not in board and "6" not in board and
+        "7" not in board and "8" not in board and "9" not in board
     ):
         game_still_going = False
     return
